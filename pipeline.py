@@ -24,32 +24,33 @@ class DETR_Model:
         if os.path.exists(self.data_path) and os.path.isdir(self.data_path):
             print(f"Dataset path {self.data_path} is valid.")
 
-            # confirm dataset isn't empty, then check for valid image files
-            with os.scandir(self.data_path) as entries:
-                if not any(entries):
-                    raise ValueError(f"Dataset path {self.data_path} is empty.")
-                else: 
-                    print(f"Dataset path {self.data_path} is not empty. Checking for valid image files...")
-                    for entry in entries:
-                        if entry.is_file() and entry.name.lower().endswith((".jpg", ".jpeg", ".png")):
-                            print(f"Found valid image file: {entry.name}. Checking if it is corrupted...")
-                            # check for corrupted images
-                            try:
-                                with Image.open(entry.path) as img:
-                                    # image verify returns None if the image is valid, otherwise it raises an exception
-                                    if img.verify() == None:
-                                        print(f"Image file {entry.name} is valid.")
-                                        return True 
-                                    else:
-                                        print(f"Image file {entry.name} could not be verified.")
-                            except (IOError, SyntaxError) as e:
-                                raise ValueError(f"Image file {entry.name} is corrupted or unreadable: {e}")
+            entries = list(os.scandir(self.data_path))  # Convert to list to allow multiple iterations
+            # confirm dataset isn't empty, then check for valid image files:
+            if not entries:
+                raise ValueError(f"Dataset path {self.data_path} is empty.")
+            else: 
+                print(f"Dataset path {self.data_path} is not empty. Checking for valid image files...")
+          
+            print(f"Number of entries in dataset: {len(list(entries))}")
+            for entry in entries:
+                if entry.is_file() and entry.name.lower().endswith((".jpg", ".jpeg", ".png")):
+                    print(f"Found valid image file: {entry.name}. Checking if it is corrupted...")
+                    # check for corrupted images
+                    try:
+                        with Image.open(entry.path) as img:
+                            # image verify returns None if the image is valid, otherwise it raises an exception
+                            if img.verify() == None:
+                                print(f"Image file {entry.name} is valid.")
+                                #yield True 
+                            else:
+                                print(f"Image file {entry.name} could not be verified.")
+                    except (IOError, SyntaxError) as e:
+                        raise ValueError(f"Image file {entry.name} is corrupted or unreadable: {e}")
 
-                        else:
-                            raise ValueError(f"Dataset path {self.data_path} does not contain any valid image files.")
+                else:
+                    print(f"Found non-image file: {entry.name}. Skipping...")
         else:
             raise ValueError(f"Dataset path {self.data_path} is not valid.")
-
 
 
     def predict(self, image_path):
