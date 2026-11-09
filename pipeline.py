@@ -3,7 +3,7 @@ import torch
 import argparse
 import os
 from PIL import Image
-from transformers import RTDetrForObjectDetection, RTDetrImageProcessor
+from transformers import RTDetrForObjectDetection, RTDetrImageProcessor, Trainer, TrainingArguments
 
 class DETR_Model:
 
@@ -13,6 +13,20 @@ class DETR_Model:
 
         self.data_path = ""
         self.image_files_list = []
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.training_args = TrainingArguments(
+            output_dir="./results",
+            evaluation_strategy="epoch",
+            save_strategy="epoch",
+            learning_rate=2e-5,
+            per_device_train_batch_size=4,
+            per_device_eval_batch_size=4,
+            num_train_epochs=3,
+            weight_decay=0.01,
+            logging_dir="./logs",
+            logging_steps=10,
+        )
 
     def get_dataset(self):
         parser = argparse.ArgumentParser()
@@ -96,18 +110,13 @@ class DETR_Model:
                 opened_image = opened_image.resize((640, 360))
                 print(f"Image size after resizing: {opened_image.size}")
 
-                opened_image.show()
+            # normalize pixels for RT DETR
 
-
-
-
-                
-        
 
     def predict(self, image_path):
-
-        image = Image.open(image_path)
-        inputs = self.image_processor(images=image, return_tensors="pt")
+        
+        
+        inputs = self.image_processor(images=, return_tensors="pt")
         outputs = self.model(**inputs)
 
         # Get the predicted bounding boxes and labels
